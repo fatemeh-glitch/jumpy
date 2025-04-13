@@ -1,5 +1,6 @@
 import pygame
 import sys
+import platform
 
 # Initialize Pygame
 pygame.init()
@@ -18,7 +19,10 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 
 # Set up the display
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+flags = 0
+if platform.system() == 'Emscripten':
+    flags = pygame.OPENGL | pygame.DOUBLEBUF
+screen = pygame.display.set_mode((WIDTH, HEIGHT), flags)
 pygame.display.set_caption("Jumpy")
 clock = pygame.time.Clock()
 
@@ -74,46 +78,52 @@ class Platform:
     def draw(self, surface):
         pygame.draw.rect(surface, GREEN, self.rect)
 
-# Create game objects
-player = Player(WIDTH // 2, HEIGHT // 2)
-platforms = [
-    Platform(100, 400, 200, 20),
-    Platform(400, 300, 200, 20),
-    Platform(200, 200, 200, 20),
-    Platform(0, HEIGHT - 20, WIDTH, 20)  # Ground
-]
+def game_loop():
+    # Create game objects
+    player = Player(WIDTH // 2, HEIGHT // 2)
+    platforms = [
+        Platform(100, 400, 200, 20),
+        Platform(400, 300, 200, 20),
+        Platform(200, 200, 200, 20),
+        Platform(0, HEIGHT - 20, WIDTH, 20)  # Ground
+    ]
 
-# Game loop
-running = True
-while running:
-    # Handle events
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                player.jump()
+    # Game loop
+    running = True
+    while running:
+        # Handle events
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    player.jump()
 
-    # Handle continuous key presses
-    keys = pygame.key.get_pressed()
-    player.velocity_x = 0
-    if keys[pygame.K_LEFT]:
-        player.velocity_x = -PLAYER_SPEED
-    if keys[pygame.K_RIGHT]:
-        player.velocity_x = PLAYER_SPEED
+        # Handle continuous key presses
+        keys = pygame.key.get_pressed()
+        player.velocity_x = 0
+        if keys[pygame.K_LEFT]:
+            player.velocity_x = -PLAYER_SPEED
+        if keys[pygame.K_RIGHT]:
+            player.velocity_x = PLAYER_SPEED
 
-    # Update
-    player.update(platforms)
+        # Update
+        player.update(platforms)
 
-    # Draw
-    screen.fill(WHITE)
-    for platform in platforms:
-        platform.draw(screen)
-    player.draw(screen)
+        # Draw
+        screen.fill(WHITE)
+        for platform in platforms:
+            platform.draw(screen)
+        player.draw(screen)
 
-    # Update display
-    pygame.display.flip()
-    clock.tick(FPS)
+        # Update display
+        pygame.display.flip()
+        clock.tick(FPS)
 
-pygame.quit()
-sys.exit() 
+if __name__ == '__main__':
+    try:
+        game_loop()
+    finally:
+        pygame.quit()
+        if platform.system() != 'Emscripten':
+            sys.exit() 
