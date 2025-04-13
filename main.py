@@ -1,6 +1,6 @@
 import pygame
+import asyncio
 import sys
-import platform
 
 # Initialize Pygame
 pygame.init()
@@ -19,10 +19,7 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 
 # Set up the display
-flags = 0
-if platform.system() == 'Emscripten':
-    flags = pygame.OPENGL | pygame.DOUBLEBUF
-screen = pygame.display.set_mode((WIDTH, HEIGHT), flags)
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Jumpy")
 clock = pygame.time.Clock()
 
@@ -78,7 +75,7 @@ class Platform:
     def draw(self, surface):
         pygame.draw.rect(surface, GREEN, self.rect)
 
-def game_loop():
+async def main():
     # Create game objects
     player = Player(WIDTH // 2, HEIGHT // 2)
     platforms = [
@@ -119,11 +116,10 @@ def game_loop():
         # Update display
         pygame.display.flip()
         clock.tick(FPS)
+        
+        # Required for web
+        await asyncio.sleep(0)
 
-if __name__ == '__main__':
-    try:
-        game_loop()
-    finally:
-        pygame.quit()
-        if platform.system() != 'Emscripten':
-            sys.exit() 
+    pygame.quit()
+
+asyncio.run(main()) 
