@@ -38,8 +38,9 @@ jobs:
 
       - name: Build with Pygbag
         run: |
-          python -m pygbag --build main.py
-          cp -r build/web/* .
+          mkdir -p build
+          python -m pygbag --build --app-name jumpy --archive --path build main.py
+          ls -la build/web/
 
       - name: Setup Pages
         uses: actions/configure-pages@v3
@@ -47,7 +48,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
-          path: '.'
+          path: 'build/web'
 
       - name: Deploy to GitHub Pages
         id: deployment

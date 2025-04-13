@@ -1,6 +1,6 @@
 import pygame
 import asyncio
-import sys
+import platform
 
 # Initialize Pygame
 pygame.init()
@@ -19,7 +19,8 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 
 # Set up the display
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+flags = pygame.SCALED | pygame.RESIZABLE
+screen = pygame.display.set_mode((WIDTH, HEIGHT), flags)
 pygame.display.set_caption("Jumpy")
 clock = pygame.time.Clock()
 
@@ -93,15 +94,17 @@ async def main():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
+                if event.key == pygame.K_SPACE or event.key == pygame.K_UP:
                     player.jump()
+            if event.type == pygame.VIDEORESIZE:
+                pygame.display.set_mode((event.w, event.h), flags)
 
         # Handle continuous key presses
         keys = pygame.key.get_pressed()
         player.velocity_x = 0
-        if keys[pygame.K_LEFT]:
+        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             player.velocity_x = -PLAYER_SPEED
-        if keys[pygame.K_RIGHT]:
+        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             player.velocity_x = PLAYER_SPEED
 
         # Update
@@ -115,11 +118,8 @@ async def main():
 
         # Update display
         pygame.display.flip()
+        await asyncio.sleep(0)  # Required for web
         clock.tick(FPS)
-        
-        # Required for web
-        await asyncio.sleep(0)
 
-    pygame.quit()
-
-asyncio.run(main()) 
+if __name__ == '__main__':
+    asyncio.run(main()) 
